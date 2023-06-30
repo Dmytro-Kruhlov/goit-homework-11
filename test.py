@@ -11,7 +11,7 @@ phone = Phone()
 phone.value = "1234"
 birthday = Birthday()
 birthday.value = "10.04.1990"
-record = Record(name, phone, birthday)
+record = Record(name, phone)
 phone1 = Phone()
 phone1.value = "123456"
 record.add_phone(phone1)

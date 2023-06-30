@@ -81,17 +81,18 @@ class Record:
             print("Birthday already exists")
 
     def days_to_birthday(self):
-
-        birthday = self.birthday.value
-        day_now = datetime.now()
-        if day_now > datetime(day_now.year, birthday.month, birthday.day):
-            time_to_birthday = datetime(
-                day_now.year + 1, birthday.month, birthday.day) - day_now
+        if self.birthday:
+            birthday = self.birthday.value
+            day_now = datetime.now()
+            if day_now > datetime(day_now.year, birthday.month, birthday.day):
+                time_to_birthday = datetime(
+                    day_now.year + 1, birthday.month, birthday.day) - day_now
+            else:
+                time_to_birthday = datetime(
+                    day_now.year, birthday.month, birthday.day) - day_now
+            return f"{time_to_birthday.days} days to {self.name.value} birthday"
         else:
-            time_to_birthday = datetime(
-                day_now.year, birthday.month, birthday.day) - day_now
-        return f"{time_to_birthday.days} days to {self.name.value} birthday"
-
+            return "This contact does not have a birthday"
 
 class AdressBook(UserDict):
 
