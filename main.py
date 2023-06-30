@@ -1,0 +1,201 @@
+from oop import AdressBook, Record, Name, Phone, Birthday
+
+
+adress_book = AdressBook()
+
+
+def input_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except KeyError:
+            return "Error: Invalid command. Please try again."
+        except ValueError:
+            return "Error: Invalid input format. Please try again."
+        except IndexError:
+            return "Error: Contact not found. Please try again."
+    return wrapper
+
+
+def spliting(args):
+    return args.split()
+
+
+def hello(args):
+    return "How can I help you?"
+
+
+def add_record(args):
+
+    args = spliting(args)
+
+    if len(args) < 1 or len(args) > 3:
+        raise ValueError
+    name = args[0]
+    phone = args[1] if len(args) > 1 else ""
+    birthday = args[2] if len(args) > 2 else ""
+    
+    if name in adress_book.data:
+        return "You already have a contact with this name"
+    else:
+
+        r_name = Name()
+        r_name.value = name
+        record = Record(r_name)
+        if phone:
+            r_phone = Phone()
+            r_phone.value = phone
+            record.add_phone(r_phone)
+        if birthday:
+            r_birthday = Birthday()
+            r_birthday.value = birthday
+            record.add_birthday(r_birthday)
+        adress_book.add_record(record)
+        
+        return f"Contact {name} has been added."
+    
+
+def add_birthday(args):
+
+    args = spliting(args)
+
+    if len(args) < 2:
+        raise ValueError
+    
+    name, birthday = args
+    record = adress_book[name]
+    a_birthday = Birthday()
+    a_birthday.value = birthday
+    record.add_birthday(a_birthday)
+
+    return f"Birthday to contact {name} has been added"
+
+
+def show_day_to_birthday(args):
+
+    name = args
+
+    if name in adress_book.data and adress_book.data[name].birthday:
+        day_birthday = adress_book.data[name].days_to_birthday()
+        return day_birthday
+    else:
+        return f"This contact dont have birthday"
+
+    
+def add_phone(args):
+
+    args = spliting(args)
+
+    if len(args) != 2:
+        raise ValueError
+    name, phone = args
+    record = adress_book[name]
+    if name in adress_book.data:
+        a_phone = Phone()
+        a_phone.value = phone
+        record.add_phone(a_phone)
+
+    return f"A number {phone} has been added to a contact {name}"
+
+
+def change(args):
+
+    args = spliting(args)
+
+    if len(args) != 3:
+        raise ValueError
+    name, old_phone, new_phone = args
+    if name not in adress_book.data:
+        return f"You dont have contact with name {name}"
+    record = adress_book[name]
+    
+    for field in record.optional_fields:
+        if field.value == old_phone:
+            field.value = new_phone
+        
+    return f"The phone number {old_phone} for contact {name} has been changed to {new_phone}."
+
+
+def get_phone_number(args):
+
+    args = spliting(args)
+
+    if len(args) != 1:
+        raise ValueError
+    name = args[0]
+    if name in adress_book.data:
+        record = adress_book[name]
+        phones = []
+        for field in record.optional_fields:
+            phones.append(field.value)
+        return f"The phone numbers for contact {name} is {', '.join(phones)}."
+    else:
+        raise IndexError
+
+
+def show_all_contacts(args):
+
+    if len(args) != 1:
+        raise ValueError
+    n = int(args[0])
+    page = 1
+    page_iterator = adress_book.iterator(n)
+
+    output = ""
+
+    for pages in page_iterator:
+        output += f"Page {page} Contacts:\n"
+        for record in pages:
+            fields = [
+                field.value for field in record.optional_fields if isinstance(field, Phone)]
+            phones = ", ".join(fields) if fields else "N/A"
+            birthday = record.birthday.value.date() if record.birthday else "N/A"
+            output += f"{record.name.value}: Phones:{phones}, Birthday: {birthday}\n"
+        page += 1
+
+    return output
+
+
+COMMANDS = {
+    add_record: ["add record"],
+    hello: ["hello"],
+    change: ["change"],
+    get_phone_number: ["phone"],
+    show_all_contacts: ["show all"],
+    add_phone: ["add phone"],
+    add_birthday: ["add birthday"],
+    show_day_to_birthday: ["show birthday"]
+}
+
+
+@input_error
+def get_func(user_input):
+    succesfull_run = False
+    user_input_lower = user_input.lower()
+    for func, key_words in COMMANDS.items():
+        for key in key_words:
+            if user_input_lower.startswith(key):
+                args = user_input[len(key):].strip()
+                result = func(args)
+                succesfull_run = True
+                break
+    if not succesfull_run:
+        raise KeyError
+    return result
+
+
+def main_loop():
+
+    while True:
+
+        user_input = input(">>> ")
+
+        if user_input in ["good bye", "close", "exit"]:
+            print("Good bye!")
+            break
+        result = get_func(user_input)
+        print(result)
+
+
+if __name__ == "__main__":
+    main_loop()
