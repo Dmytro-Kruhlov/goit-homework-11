@@ -1,6 +1,6 @@
 from collections import UserDict
 from datetime import datetime
-
+import pickle
 class Field:
 
     def __init__(self):
@@ -110,4 +110,20 @@ class AdressBook(UserDict):
             start = end
             end = start + n
 
-    
+    def save_data(self, filename):
+        with open(filename, "wb") as file:
+            pickle.dump(self.data, file)
+        return "Data saved successfully."
+
+
+    def load_data(self, filename):
+        try:
+            with open(filename, "rb") as file:
+                self.data = pickle.load(file)
+            return "Data loaded successfully"
+        except FileNotFoundError:
+            return "File not found."
+        except pickle.UnpicklingError:
+            return "Error while loading data from the file."
+            
+            

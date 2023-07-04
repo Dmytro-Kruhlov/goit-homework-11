@@ -17,6 +17,17 @@ def input_error(func):
     return wrapper
 
 
+def load(args):
+    filename = args
+    
+    return adress_book.load_data(filename)
+
+
+def save(args):
+    filename = args
+    
+    return adress_book.save_data(filename)
+
 def spliting(args):
     return args.split()
 
@@ -146,12 +157,35 @@ def show_all_contacts(args):
     for pages in page_iterator:
         output += f"Page {page} Contacts:\n"
         for record in pages:
-            fields = [
-                field.value for field in record.optional_fields if isinstance(field, Phone)]
+            fields = [field.value for field in record.optional_fields if isinstance(field, Phone)]
             phones = ", ".join(fields) if fields else "N/A"
             birthday = record.birthday.value.date() if record.birthday else "N/A"
             output += f"{record.name.value}: Phones:{phones}, Birthday: {birthday}\n"
         page += 1
+
+    return output
+
+
+def search_contacts(args):
+    results = []
+    search_term = args
+
+    for record in adress_book.data.values():
+        name = record.name.value
+        phones = [
+            phone.value for phone in record.optional_fields if isinstance(phone, Phone)]
+        if search_term in name or any(search_term in phone for phone in phones):
+            results.append(record)
+
+    if not results:
+        return "No matching contacts found."
+
+    output = ""
+    for record in results:
+        phones = [
+            phone.value for phone in record.optional_fields if isinstance(phone, Phone)]
+        birthday = record.birthday.value.date() if record.birthday else "N/A"
+        output += f"{record.name.value}: Phones: {', '.join(phones)}, Birthday: {birthday}\n"
 
     return output
 
@@ -164,7 +198,10 @@ COMMANDS = {
     show_all_contacts: ["show all"],
     add_phone: ["add phone"],
     add_birthday: ["add birthday"],
-    show_day_to_birthday: ["show birthday"]
+    show_day_to_birthday: ["show birthday"],
+    load: ["load"],
+    save: ["save"],
+    search_contacts: ["search"]
 }
 
 
