@@ -31,6 +31,11 @@ class Phone(Field):
             raise ValueError("Phone must be a number!")
         self._value = value
 
+    def __eq__(self, other):
+        if  not isinstance(other, Phone):
+            return False
+        return self.value == other.value
+
 
 class Birthday(Field):
 
@@ -57,21 +62,18 @@ class Record:
             self.optional_fields.append(phone)
 
     def add_phone(self, phone: Phone):
-
         self.optional_fields.append(phone)
 
     def remove_phone(self, phone: Phone):
         for field in self.optional_fields:
-            if not isinstance(field, Phone):
-                continue
-            if field.value == phone.value:
+            
+            if field == phone:
                 self.optional_fields.remove(field)
 
     def edit_phone(self, phone: Phone, new_phone_number):
         for field in self.optional_fields:
-            if not isinstance(field, Phone):
-                continue
-            if field.value == phone.value:
+            
+            if field == phone:
                 field.value = new_phone_number
 
     def add_birthday(self, birthday: Birthday):
@@ -94,7 +96,7 @@ class Record:
         else:
             return "This contact does not have a birthday"
         
-    def print_record(self):
+    def __str__(self):
         output = ""
         fields = [field.value for field in self.optional_fields if isinstance(field, Phone)]
         phones = ", ".join(fields) if fields else "N/A"
@@ -103,27 +105,16 @@ class Record:
         return output
     
     
+    
 class AdressBook(UserDict):
 
     def add_record(self, record: Record):
         self.data[record.name.value] = record
 
-    def iterator(self, n: int):
-        start = 0
-        end = n
-        keys = list(self.data.keys())
-        while start < len(keys):
-            chunk_keys = keys[start:end]
-            chunk = [self.data[key] for key in chunk_keys]
-            yield chunk
-            start = end
-            end = start + n
-
     def save_data(self, filename):
         with open(filename, "wb") as file:
             pickle.dump(self.data, file)
         return "Data saved successfully."
-
 
     def load_data(self, filename):
         try:
@@ -136,3 +127,23 @@ class AdressBook(UserDict):
             return "Error while loading data from the file."
             
             
+class AddressBookIterator:
+
+    def __init__(self, address_book: AdressBook, n):
+        self.address_book = address_book
+        self.n = n
+        self.start = 0
+        self.keys = list(self.address_book.data.keys())
+
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        end = self.start + self.n
+        if self.start < len(self.keys):
+            chunk_keys = self.keys[self.start:end]
+            chunk = [self.address_book.data[key] for key in chunk_keys]
+            self.start = end
+            return chunk
+        raise StopIteration     
+        

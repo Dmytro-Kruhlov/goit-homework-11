@@ -1,4 +1,4 @@
-from oop import AdressBook, Record, Name, Phone, Birthday
+from oop import AdressBook, Record, Name, Phone, Birthday, AddressBookIterator
 
 
 adress_book = AdressBook()
@@ -89,7 +89,7 @@ def show_day_to_birthday(args):
         day_birthday = adress_book.data[name].days_to_birthday()
         return day_birthday
     else:
-        return f"This contact dont have birthday"
+        return f"This contact doesn't have birthday"
 
     
 def add_phone(args):
@@ -118,10 +118,9 @@ def change(args):
     if name not in adress_book.data:
         return f"You dont have contact with name {name}"
     record = adress_book[name]
-    
-    for field in record.optional_fields:
-        if field.value == old_phone:
-            field.value = new_phone
+    phone = Phone()
+    phone.value = old_phone
+    record.edit_phone(phone, new_phone)
         
     return f"The phone number {old_phone} for contact {name} has been changed to {new_phone}."
 
@@ -150,17 +149,17 @@ def show_all_contacts(args):
     if not args:
         output = ""
         for record in adress_book.data.values():
-            output += record.print_record()
+            output += str(record)
         return output
     else:
         n = int(args[0])
         page = 1
-        page_iterator = adress_book.iterator(n)
+        page_iterator = AddressBookIterator(adress_book, n)
         output = ""
         for pages in page_iterator:
             output += f"Page {page} Contacts:\n"
             for record in pages:
-                output += record.print_record()
+                output += str(record)
             page += 1
 
         return output
@@ -181,7 +180,7 @@ def search_contacts(args):
 
     output = ""
     for record in results:
-        output += record.print_record()
+        output += str(record)
 
     return output
 
