@@ -93,7 +93,16 @@ class Record:
             return f"{time_to_birthday.days} days to {self.name.value} birthday"
         else:
             return "This contact does not have a birthday"
-
+        
+    def print_record(self):
+        output = ""
+        fields = [field.value for field in self.optional_fields if isinstance(field, Phone)]
+        phones = ", ".join(fields) if fields else "N/A"
+        birthday = self.birthday.value.date() if self.birthday else "N/A"
+        output += f"{self.name.value}: Phones:{phones}, Birthday: {birthday}\n"
+        return output
+    
+    
 class AdressBook(UserDict):
 
     def add_record(self, record: Record):

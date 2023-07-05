@@ -19,14 +19,13 @@ def input_error(func):
 
 def load(args):
     filename = args
-    
     return adress_book.load_data(filename)
 
 
 def save(args):
     filename = args
-    
     return adress_book.save_data(filename)
+
 
 def spliting(args):
     return args.split()
@@ -146,24 +145,25 @@ def get_phone_number(args):
 
 def show_all_contacts(args):
 
-    if len(args) != 1:
+    if len(args) > 1:
         raise ValueError
-    n = int(args[0])
-    page = 1
-    page_iterator = adress_book.iterator(n)
+    if not args:
+        output = ""
+        for record in adress_book.data.values():
+            output += record.print_record()
+        return output
+    else:
+        n = int(args[0])
+        page = 1
+        page_iterator = adress_book.iterator(n)
+        output = ""
+        for pages in page_iterator:
+            output += f"Page {page} Contacts:\n"
+            for record in pages:
+                output += record.print_record()
+            page += 1
 
-    output = ""
-
-    for pages in page_iterator:
-        output += f"Page {page} Contacts:\n"
-        for record in pages:
-            fields = [field.value for field in record.optional_fields if isinstance(field, Phone)]
-            phones = ", ".join(fields) if fields else "N/A"
-            birthday = record.birthday.value.date() if record.birthday else "N/A"
-            output += f"{record.name.value}: Phones:{phones}, Birthday: {birthday}\n"
-        page += 1
-
-    return output
+        return output
 
 
 def search_contacts(args):
@@ -172,8 +172,7 @@ def search_contacts(args):
 
     for record in adress_book.data.values():
         name = record.name.value
-        phones = [
-            phone.value for phone in record.optional_fields if isinstance(phone, Phone)]
+        phones = [phone.value for phone in record.optional_fields if isinstance(phone, Phone)]
         if search_term in name or any(search_term in phone for phone in phones):
             results.append(record)
 
@@ -182,10 +181,7 @@ def search_contacts(args):
 
     output = ""
     for record in results:
-        phones = [
-            phone.value for phone in record.optional_fields if isinstance(phone, Phone)]
-        birthday = record.birthday.value.date() if record.birthday else "N/A"
-        output += f"{record.name.value}: Phones: {', '.join(phones)}, Birthday: {birthday}\n"
+        output += record.print_record()
 
     return output
 
